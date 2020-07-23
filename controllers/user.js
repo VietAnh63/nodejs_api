@@ -1,38 +1,10 @@
 const User = require("../models/User")
+const Deck = require("../models/Deck")
 
-//Callback ==> c1
-/*
-module.exports.index = function(req,res,next){
-     User.find({}, (err,users) =>{
-          if(err) next(err)
-          return res.status(200).json({users})
-     })
-}
-*/
+// import @hapi/joi
+const Joi = require("@hapi/joi") 
+//User
 
-//Promise way ==> c2
-/**
- * module.exports.index = function (req,res,next){
-     User.find({}).then(users => {
-          return res.status(200).json({users})
-     }).catch(err => next(err))
-}
- **/
-
-/**
- * module.exports.addUser = function (req, res, next){
-     console.log("req.body content", req.body)
-
-     //Create Object model
-     const newUser = new User(req.body)
-     console.log("newUser", newUser)
-     newUser.save().then(user => {
-          return res.status(201).json({user})
-     }).catch(err => next(err))
-}
- */
-
-//async & await ==> c3
 module.exports.index = async function (req, res, next){
 
      const users = await User.find({})
@@ -51,7 +23,7 @@ module.exports.addUser = async function (req, res, next){
 
 module.exports.getUser = async function (req, res, next){
 
-     const {userId} = req.params
+     const {userId} = req.value.params
      
      const user = await User.findById(userId)
      return res.status(200).json({user})
@@ -73,4 +45,36 @@ module.exports.updateUser = async function (req, res, next){
 
      const result = await User.findByIdAndUpdate(userId, newUser)
      return res.status(200).json({success: true})
+}
+
+//Deck
+//get decks for one User
+module.exports.getDeck = async function (req, res, next){
+     const {userId} = req.params
+
+     //get User by Id, populate get all info of deck User
+     const user = await User.findById(userId).populate("decks")
+     
+     //get decks of User
+     return res.status(200).json({decks: user.decks})
+}
+
+module.exports.addDeck = async function (req, res, next){
+     const {userId} = req.params
+
+     //Create a new Deck
+     const newDeck = new Deck(req.body)
+
+     //get User with Id params
+     const user = await User.findById(userId)
+
+     //Update field owner of deck
+     newDeck.owner = userId
+     await newDeck.save()
+
+     //Push id of new deck for user
+     user.decks.push(newDeck._id)
+     await user.save()
+
+     return res.status(201).json({deck:newDeck})
 }
