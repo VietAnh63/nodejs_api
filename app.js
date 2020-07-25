@@ -6,6 +6,9 @@ const logger = require("morgan")
 //Config body-parser
 const bodyParser = require("body-parser")
 
+//Config helmet to protect API
+const secureApp = require("helmet")
+
 
 //db Mongoose
 const mongoClient = require("mongoose")
@@ -19,15 +22,18 @@ mongoClient.connect("mongodb://localhost/nodejsapi", { useNewUrlParser: true, us
      })
 
 const app = express()
-const routerUser = require("./routes/user")
+//use helmet
+app.use(secureApp())
 
+const routerUser = require("./routes/user")
+const routerDeck = require("./routes/deck")
 //Middlewares
 app.use(logger("dev"))
 app.use(bodyParser.json())
 
 //Routes
 app.use("/user", routerUser)
-
+app.use("/deck", routerDeck)
 
 app.get("/",(req,res,next)=>{
      return res.status(200).json({message : "Server is update OK"})
@@ -36,7 +42,7 @@ app.get("/",(req,res,next)=>{
 
 
 //Cath 404 errors
-app.use((req,res,next)=>{
+app.use((req, res, next)=>{
      const err = new Error("Not found")
      err.status = 404
      next(err)
@@ -44,8 +50,10 @@ app.use((req,res,next)=>{
 
 //Function for handle error
 app.use((err, req, res, next)=>{
+     
+     console.log(err);
      //get error
-     const error = app.get("env") === "development" ? err : {}
+     const error = app.get("env") === "♿ development" ? err : {}
 
      //get status of error
      const status = err.status || 500
@@ -60,5 +68,5 @@ app.use((err, req, res, next)=>{
 
 const port = app.get('port') || 3000
 app.listen(port, () => {
-     console.log(`Server is listening on port ${port}`)
+     console.log(`⛎ Server is listening on port ${port}`)
 })
