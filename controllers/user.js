@@ -107,10 +107,23 @@ module.exports.signUp = async function (req, res, next) {
         await newUser.save();
         const token = encodedToken(newUser._id);
         res.setHeader("Authentication", token);
-        return res.status(201).json({ success: true, token });
+        return res.status(201).json({ success: true });
     }
 };
 
-module.exports.signIn = async function (req, res, next) {};
+module.exports.signIn = async function (req, res, next) {
+    const userFromReq = req.user;
+    if (!userFromReq) {
+        return res.json({ message: "Password is incorrect" });
+    } else {
+        //Call user from request that pushed from pasport-local
+        const token = encodedToken(userFromReq._id);
+        res.setHeader("Auhentication", token);
 
-module.exports.secret = async function (req, res, next) {};
+        return res.status(200).json({ success: true });
+    }
+};
+
+module.exports.secret = async function (req, res, next) {
+    return res.status(200).json({ resource: true });
+};

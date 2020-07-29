@@ -7,49 +7,62 @@ const UserController = require("../controllers/user");
 
 const { validateParam, validateBody, schemas } = require("../helpers");
 
+//import passport
+const passport = require("passport");
+require("../middlewares/passport");
+
 //User
 //return list users and add new user
 router
-  .route("/")
-  .get(UserController.index)
-  .post(validateBody(schemas.userSchema), UserController.addUser);
+    .route("/")
+    .get(UserController.index)
+    .post(validateBody(schemas.userSchema), UserController.addUser);
 
 //signup, signin, secret
 router
-  .route("/signup")
-  .post(validateBody(schemas.authSignUpSchema), UserController.signUp);
+    .route("/signup")
+    .post(validateBody(schemas.authSignUpSchema), UserController.signUp);
 
 router
-  .route("/signin")
-  .post(validateBody(schemas.authSignInSchema), UserController.signIn);
+    .route("/signin")
+    .post(
+        validateBody(schemas.authSignInSchema),
+        passport.authenticate("local", { session: false }),
+        UserController.signIn
+    );
 
-router.route("/secret").get(UserController.secret);
+router
+    .route("/secret")
+    .get(
+        passport.authenticate("jwt", { session: false }),
+        UserController.secret
+    );
 
 //return one user
 router
-  .route("/:userId")
-  .get(validateParam(schemas.idSchema, "userId"), UserController.getUser)
-  //replace user
-  .put(
-    validateParam(schemas.idSchema, "userId"),
-    validateBody(schemas.userSchema),
-    UserController.replaceUser
-  )
-  //update user
-  .patch(
-    validateParam(schemas.idSchema, "userId"),
-    validateBody(schemas.userUpadateSchema),
-    UserController.updateUser
-  );
+    .route("/:userId")
+    .get(validateParam(schemas.idSchema, "userId"), UserController.getUser)
+    //replace user
+    .put(
+        validateParam(schemas.idSchema, "userId"),
+        validateBody(schemas.userSchema),
+        UserController.replaceUser
+    )
+    //update user
+    .patch(
+        validateParam(schemas.idSchema, "userId"),
+        validateBody(schemas.userUpadateSchema),
+        UserController.updateUser
+    );
 
 //Deck
 router
-  .route("/:userId/decks")
-  .get(validateParam(schemas.idSchema, "userId"), UserController.getDeck)
-  .post(
-    validateParam(schemas.idSchema, "userId"),
-    validateBody(schemas.deckSchema),
-    UserController.addDeck
-  );
+    .route("/:userId/decks")
+    .get(validateParam(schemas.idSchema, "userId"), UserController.getDeck)
+    .post(
+        validateParam(schemas.idSchema, "userId"),
+        validateBody(schemas.deckSchema),
+        UserController.addDeck
+    );
 
 module.exports = router;
