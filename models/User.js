@@ -17,7 +17,19 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+    },
+    authGoogleId: {
+        type: String,
+        default: null,
+    },
+    authFacebookId: {
+        type: String,
+        default: null,
+    },
+    authType: {
+        type: String,
+        enum: ["local", "google", "facebook"],
+        default: "local",
     },
     decks: [
         {
@@ -30,6 +42,8 @@ const UserSchema = new mongoose.Schema({
 // preprocess then save
 UserSchema.pre("save", async function (next) {
     try {
+        if (this.authType !== "local") next();
+
         // Generate random to combine with your password, call salt
         const salt = await bcrypt.genSalt(5);
 

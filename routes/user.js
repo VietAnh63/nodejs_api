@@ -18,6 +18,22 @@ router
     .get(UserController.index)
     .post(validateBody(schemas.userSchema), UserController.addUser);
 
+//OAuth google
+router
+    .route("/auth/google")
+    .post(
+        passport.authenticate("google-plus-token", { session: false }),
+        UserController.authGoogle
+    );
+
+//OAuth facebook
+router
+    .route("/auth/facebook")
+    .post(
+        passport.authenticate("facebook-token", { session: false }),
+        UserController.authFacebook
+    );
+
 //signup, signin, secret
 router
     .route("/signup")

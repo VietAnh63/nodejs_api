@@ -127,3 +127,29 @@ module.exports.signIn = async function (req, res, next) {
 module.exports.secret = async function (req, res, next) {
     return res.status(200).json({ resource: true });
 };
+
+module.exports.authGoogle = async function (req, res, next) {
+    const userFromReq = req.user;
+    if (!userFromReq) {
+        return res.json({ message: "Password is incorrect" });
+    } else {
+        //Call user from request that pushed from pasport-local
+        const token = encodedToken(userFromReq._id);
+        res.setHeader("Auhentication", token);
+
+        return res.status(200).json({ success: true });
+    }
+};
+
+module.exports.authFacebook = async function (req, res, next) {
+    const userFromReq = req.user;
+    if (!userFromReq) {
+        return res.json({ message: "Password is incorrect" });
+    } else {
+        //Call user from request that pushed from pasport-local
+        const token = encodedToken(userFromReq._id);
+        res.setHeader("Auhentication", token);
+
+        return res.status(200).json({ success: true });
+    }
+};
