@@ -47,14 +47,19 @@ mongoClient
 const app = express();
 //use helmet
 app.use(secureApp());
-
+const routerClient = require("./routes/client");
 const routerUser = require("./routes/user");
 const routerDeck = require("./routes/deck");
+
 //Middlewares
 app.use(logger("dev"));
+
+app.use(bodyParser());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 //Routes
+app.use("/client", routerClient);
 app.use("/user", routerUser);
 app.use("/deck", routerDeck);
 

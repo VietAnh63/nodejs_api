@@ -1,11 +1,38 @@
 const express = require("express");
 //const router = express.Router()
-
+const path = require("path");
 const router = require("express-promise-router")();
 
 const UserController = require("../controllers/user");
 
 const { validateParam, validateBody, schemas } = require("../helpers");
+
+//Using multer
+var multer = require("multer");
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.resolve("public", "upload"));
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + "-" + file.originalname);
+    },
+});
+var upload = multer({
+    storage: storage,
+    fileFilter: function (req, file, cb) {
+        console.log(file);
+        if (
+            file.mimetype == "image/bmp" ||
+            file.mimetype == "image/jpg" ||
+            file.mimetype == "image/jpeg" ||
+            file.mimetype == "image/png"
+        ) {
+            cb(null, true);
+        } else {
+            return cb(new Error("Only image are allow"));
+        }
+    },
+});
 
 //import passport
 const passport = require("passport");
@@ -16,7 +43,11 @@ require("../middlewares/passport");
 router
     .route("/")
     .get(UserController.index)
-    .post(validateBody(schemas.userSchema), UserController.addUser);
+    .post(
+        upload.single("prd_image"),
+        validateBody(schemas.userSchema),
+        UserController.addUser
+    );
 
 //OAuth google
 router
@@ -37,7 +68,11 @@ router
 //signup, signin, secret
 router
     .route("/signup")
-    .post(validateBody(schemas.authSignUpSchema), UserController.signUp);
+    .post(
+        upload.single("prd_image"),
+        validateBody(schemas.authSignUpSchema),
+        UserController.signUp
+    );
 
 router
     .route("/signin")
@@ -54,31 +89,21 @@ router
         UserController.secret
     );
 
-//return one user
-router
-    .route("/:userId")
-    .get(validateParam(schemas.idSchema, "userId"), UserController.getUser)
-    //replace user
-    .put(
-        validateParam(schemas.idSchema, "userId"),
-        validateBody(schemas.userSchema),
-        UserController.replaceUser
-    )
-    //update user
-    .patch(
-        validateParam(schemas.idSchema, "userId"),
-        validateBody(schemas.userUpadateSchema),
-        UserController.updateUser
-    );
-
-//Deck
-router
-    .route("/:userId/decks")
-    .get(validateParam(schemas.idSchema, "userId"), UserController.getDeck)
-    .post(
-        validateParam(schemas.idSchema, "userId"),
-        validateBody(schemas.deckSchema),
-        UserController.addDeck
-    );
+// //return one user
+// router
+//     .route("/:userId")
+//     .get(validateParam(schemas.idSchema, "userId"), UserController.getUser)
+//     //replace user
+//     .put(
+//         validateParam(schemas.idSchema, "userId"),
+//         validateBody(schemas.userSchema),
+//         UserController.replaceUser
+//     )
+//     //update user
+//     .patch(
+//         validateParam(schemas.idSchema, "userId"),
+//         validateBody(schemas.userUpadateSchema),
+//         UserController.updateUser
+//     );
 
 module.exports = router;

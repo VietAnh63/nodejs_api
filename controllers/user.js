@@ -1,6 +1,9 @@
 const User = require("../models/User");
 const Deck = require("../models/Deck");
 
+const fs = require("fs");
+const path = require("path");
+
 //import config lib
 const config = require("config");
 
@@ -34,6 +37,7 @@ module.exports.index = async function (req, res, next) {
 };
 
 module.exports.addUser = async function (req, res, next) {
+    //console.log("req.value", req.value);
     const newUser = new User(req.value.body);
     await newUser.save();
     return res.status(201).json({ user: newUser });
@@ -64,46 +68,29 @@ module.exports.updateUser = async function (req, res, next) {
     return res.status(200).json({ success: true });
 };
 
-//Deck
-//get decks for one User
-module.exports.getDeck = async function (req, res, next) {
-    const { userId } = req.value.params;
-
-    //get User by Id, populate get all info of deck User
-    const user = await User.findById(userId).populate("decks");
-
-    //get decks of User
-    return res.status(200).json({ decks: user.decks });
-};
-
-module.exports.addDeck = async function (req, res, next) {
-    const { userId } = req.value.params;
-
-    //Create a new Deck
-    const newDeck = new Deck(req.value.body);
-
-    //get User with Id params
-    const user = await User.findById(userId);
-
-    //Update field owner of deck
-    newDeck.owner = userId;
-    await newDeck.save();
-
-    //Push id of new deck for user
-    user.decks.push(newDeck._id);
-    await user.save();
-
-    return res.status(201).json({ deck: newDeck });
-};
-
 module.exports.signUp = async function (req, res, next) {
+    //const file = req.file
+
     const { firstName, lastName, email, password } = req.value.body;
+
     const foundEmailUser = await User.findOne({ email });
 
     if (foundEmailUser) {
+        //fs.unlinkSync(req.file.path);
         return res.status(403).json({ error: { message: "Email is exists" } });
     } else {
-        const newUser = new User({ firstName, lastName, email, password });
+        if (req.file) {
+            var image = req.file.filename;
+        } else {
+            var image = "";
+        }
+        const newUser = new User({
+            firstName,
+            lastName,
+            email,
+            password,
+            image,
+        });
         await newUser.save();
         const token = encodedToken(newUser._id);
         res.setHeader("Authentication", token);
